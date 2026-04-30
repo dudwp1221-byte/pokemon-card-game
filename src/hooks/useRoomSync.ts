@@ -1,6 +1,6 @@
 // src/hooks/useRoomSync.ts
 // ══════════════════════════════════════════════════════════
-//  🏠 Firebase 방 실시간 동기화 훅
+//  🏠 Firebase 방 실시간 동기화 훅 
 //
 //  담당:
 //   - rooms/{code} onValue 구독 (게임 상태, 이모트, nextReady)
