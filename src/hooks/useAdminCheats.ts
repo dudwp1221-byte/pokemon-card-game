@@ -1,6 +1,6 @@
 // src/hooks/useAdminCheats.ts
 // ══════════════════════════════════════════════════════════
-//  🎮 어드민 키보드 치트 훅 
+//  🎮 어드민 키보드 치트 훅
 //
 //  단축키 모음 (admin 닉네임일 때만 동작):
 //   - Ctrl+Shift+/        → 프로필 전체 해금
@@ -10,14 +10,14 @@
 //   - Ctrl+Shift+Backspace → 씰 전체 초기화
 //   - Ctrl+Shift+-        → 즉시 게임 승리
 // ══════════════════════════════════════════════════════════
-import { useEffect } from "react";
-import { ALL_SEALS, saveSealDex } from "../lib/sealLogic";
-import { SHINY_SEALS, loadShinyDex, saveShinyDex } from "../lib/shinySeals";
-import { loadCapDex, saveCapDex, ALL_EVENT_SEALS } from "../lib/eventLogic";
-import { saveUserData, saveLeaderboard, db } from "../lib/db";
-import { sendLetter, LETTER_TYPE } from "../lib/mailboxLogic";
-import { getPlayerUid } from "../lib/db";
-import { applyWinner } from "../lib/gameLogic";
+import { useEffect } from 'react';
+import { ALL_SEALS, saveSealDex } from '../lib/sealLogic';
+import { SHINY_SEALS, loadShinyDex, saveShinyDex } from '../lib/shinySeals';
+import { loadCapDex, saveCapDex, ALL_EVENT_SEALS } from '../lib/eventLogic';
+import { saveUserData, saveLeaderboard, db } from '../lib/db';
+import { sendLetter, LETTER_TYPE } from '../lib/mailboxLogic';
+import { getPlayerUid } from '../lib/db';
+import { applyWinner } from '../lib/gameLogic';
 
 interface UseAdminCheatsParams {
   myName: string;
@@ -42,7 +42,7 @@ interface UseAdminCheatsParams {
   profilePatch: () => any;
 }
 
-const isAdmin = (name: string) => (name || "").toLowerCase() === "admin";
+const isAdmin = (name: string) => (name || '').toLowerCase() === 'admin';
 
 export function useAdminCheats({
   myName,
@@ -69,7 +69,7 @@ export function useAdminCheats({
   // ── Ctrl+Shift+/ → 프로필 전체 해금 ─────────────
   useEffect(() => {
     const handle = (e: KeyboardEvent) => {
-      if (!e.ctrlKey || !e.shiftKey || e.key !== "/") return;
+      if (!e.ctrlKey || !e.shiftKey || e.key !== '/') return;
       if (!isAdmin(myName)) return;
       const maxWins = {
         solo: 999,
@@ -92,25 +92,25 @@ export function useAdminCheats({
       myWinsRef.current = maxWins;
       myStatsRef.current = maxStats;
       setMyProfile((p: any) => ({ ...p, wins: maxWins, stats: maxStats }));
-      const nick = localStorage.getItem("pks_nickname");
+      const nick = localStorage.getItem('pks_nickname');
       if (nick) saveUserData(nick, { wins: maxWins, stats: maxStats });
-      showToast("✅ ADMIN CHEAT — 프로필 전체 해금", "#14532d");
+      showToast('✅ ADMIN CHEAT — 프로필 전체 해금', '#14532d');
     };
-    window.addEventListener("keydown", handle);
-    return () => window.removeEventListener("keydown", handle);
+    window.addEventListener('keydown', handle);
+    return () => window.removeEventListener('keydown', handle);
   }, [myName]);
 
   // ── Ctrl+Shift+NumLock → 씰 전체 해금 ───────────
   useEffect(() => {
     const handle = (e: KeyboardEvent) => {
-      if (!e.ctrlKey || !e.shiftKey || e.code !== "NumLock") return;
+      if (!e.ctrlKey || !e.shiftKey || e.code !== 'NumLock') return;
       if (!isAdmin(myName)) return;
       const sealCount = ALL_SEALS?.length ?? 0;
       if (sealCount === 0) return;
 
       // 띠부씰
       const existing = JSON.parse(
-        localStorage.getItem("pokeset_sealdex") || "{}"
+        localStorage.getItem('pokeset_sealdex') || '{}'
       );
       const newDex = { ...existing };
       ALL_SEALS.forEach((seal: any) => {
@@ -118,7 +118,7 @@ export function useAdminCheats({
         if (!(newDex[k]?.count > 0)) newDex[k] = { count: 1, shards: 0 };
       });
       saveSealDex(newDex);
-      window.dispatchEvent(new Event("pokeset_dex_updated"));
+      window.dispatchEvent(new Event('pokeset_dex_updated'));
 
       // 이로치씰
       const shinyDex = loadShinyDex();
@@ -127,7 +127,7 @@ export function useAdminCheats({
           shinyDex[seal.id] = { count: 1, acquiredAt: Date.now() };
       });
       saveShinyDex(shinyDex);
-      const nick3 = localStorage.getItem("pks_nickname");
+      const nick3 = localStorage.getItem('pks_nickname');
       if (nick3) saveUserData(nick3, { shinyDex }).catch(() => {});
 
       // 모자씰 + 코스프레씰
@@ -137,76 +137,76 @@ export function useAdminCheats({
           capDexAll[seal.id] = { count: 1, acquiredAt: Date.now() };
       });
       saveCapDex(capDexAll);
-      window.dispatchEvent(new Event("pokeset_cap_dex_updated"));
+      window.dispatchEvent(new Event('pokeset_cap_dex_updated'));
 
-      const nick = localStorage.getItem("pks_nickname");
+      const nick = localStorage.getItem('pks_nickname');
       if (nick) {
         saveUserData(nick, { sealDex: newDex }).catch(() => {});
         saveLeaderboard(nick, myCoins, newDex);
       }
       showToast(
         `✅ ADMIN CHEAT — 띠부씰 ${sealCount}개 + 이로치씰 151마리 + 이벤트씰 ${ALL_EVENT_SEALS.length}종 해금`,
-        "#14532d"
+        '#14532d'
       );
     };
-    window.addEventListener("keydown", handle);
-    return () => window.removeEventListener("keydown", handle);
+    window.addEventListener('keydown', handle);
+    return () => window.removeEventListener('keydown', handle);
   }, [myName, myCoins]);
 
   // ── Ctrl+Shift+* → 코인 10000 충전 ──────────────
   useEffect(() => {
     const handle = (e: KeyboardEvent) => {
       if (!e.ctrlKey || !e.shiftKey) return;
-      if (e.key !== "*" && e.code !== "NumpadMultiply") return;
+      if (e.key !== '*' && e.code !== 'NumpadMultiply') return;
       if (!isAdmin(myName)) return;
       setAndSaveCoins(myCoins + 10000);
-      showToast("✅ ADMIN CHEAT — +10,000코인", "#14532d");
+      showToast('✅ ADMIN CHEAT — +10,000코인', '#14532d');
     };
-    window.addEventListener("keydown", handle);
-    return () => window.removeEventListener("keydown", handle);
+    window.addEventListener('keydown', handle);
+    return () => window.removeEventListener('keydown', handle);
   }, [myName, myCoins]);
 
   // ── Ctrl+Shift+S → 어드민 패널 토글 ─────────────
   useEffect(() => {
     const handle = (e: KeyboardEvent) => {
-      if (!e.ctrlKey || !e.shiftKey || e.key !== "S") return;
+      if (!e.ctrlKey || !e.shiftKey || e.key !== 'S') return;
       if (!isAdmin(myName)) return;
       e.preventDefault();
       setShowAdminPanel((p: boolean) => !p);
     };
-    window.addEventListener("keydown", handle);
-    return () => window.removeEventListener("keydown", handle);
+    window.addEventListener('keydown', handle);
+    return () => window.removeEventListener('keydown', handle);
   }, [myName]);
 
   // ── Ctrl+Shift+Backspace → 씰 전체 초기화 ───────
   useEffect(() => {
     const handle = (e: KeyboardEvent) => {
       if (!e.ctrlKey || !e.shiftKey) return;
-      if (e.key !== "Backspace" && e.code !== "Backspace") return;
+      if (e.key !== 'Backspace' && e.code !== 'Backspace') return;
       if (!isAdmin(myName)) return;
 
       saveSealDex({});
-      window.dispatchEvent(new Event("pokeset_dex_updated"));
-      localStorage.removeItem("pokeset_shiny_dex");
-      window.dispatchEvent(new Event("pokeset_shiny_dex_updated"));
-      localStorage.removeItem("pokeset_cap_dex");
-      window.dispatchEvent(new Event("pokeset_cap_dex_updated"));
-      localStorage.removeItem("pokeset_pending_shinies");
+      window.dispatchEvent(new Event('pokeset_dex_updated'));
+      localStorage.removeItem('pokeset_shiny_dex');
+      window.dispatchEvent(new Event('pokeset_shiny_dex_updated'));
+      localStorage.removeItem('pokeset_cap_dex');
+      window.dispatchEvent(new Event('pokeset_cap_dex_updated'));
+      localStorage.removeItem('pokeset_pending_shinies');
       setPendingShinySeals([]);
       setRevealSeals([]);
 
-      const nick = localStorage.getItem("pks_nickname");
+      const nick = localStorage.getItem('pks_nickname');
       if (nick) {
         saveUserData(nick, { sealDex: {}, shinyDex: {} }).catch(() => {});
         saveLeaderboard(nick, myCoins, {}, profilePatch());
       }
       showToast(
-        "✅ ADMIN CHEAT — 띠부씰 + 이로치씰 + 모자씰 전체 초기화",
-        "#dc2626"
+        '✅ ADMIN CHEAT — 띠부씰 + 이로치씰 + 모자씰 전체 초기화',
+        '#dc2626'
       );
     };
-    window.addEventListener("keydown", handle);
-    return () => window.removeEventListener("keydown", handle);
+    window.addEventListener('keydown', handle);
+    return () => window.removeEventListener('keydown', handle);
   }, [myName, myCoins]);
 
   // ── 어드민 감사편지 전역 함수 ────────────────────
@@ -217,14 +217,14 @@ export function useAdminCheats({
       const nickname =
         myProfile?.nickname ??
         myProfile?.name ??
-        localStorage.getItem("pks_nickname") ??
+        localStorage.getItem('pks_nickname') ??
         myName;
       const targetId =
-        userId || encodeURIComponent(nickname).replace(/%/g, "_");
-      showToast(`📬 발송 시도 중... (userId: ${targetId})`, "#6366f1");
+        userId || encodeURIComponent(nickname).replace(/%/g, '_');
+      showToast(`📬 발송 시도 중... (userId: ${targetId})`, '#6366f1');
       sendLetter(targetId, {
         type: LETTER_TYPE.SYSTEM,
-        title: "트레이너님께 드리는 감사 인사 💌",
+        title: '트레이너님께 드리는 감사 인사 💌',
         body: `${myName} 트레이너님!
 
 아직 부족한 프로토타입인데도
@@ -236,19 +236,19 @@ export function useAdminCheats({
 큰 힘이 됐습니다.
 
 재밌게 즐겨주셔서 감사합니다! ⚡`,
-        sender: "PokéSet",
+        sender: 'PokéSet',
         rewards: { coins: 10000 },
       })
         .then((id: any) => {
           if (id) {
             setMailboxUnread((n: number) => n + 1);
-            showToast(`✅ 감사 편지 발송 완료 (id: ${id})`, "#14532d");
+            showToast(`✅ 감사 편지 발송 완료 (id: ${id})`, '#14532d');
           } else {
-            showToast("❌ 편지 발송 실패 (id null 반환)", "#dc2626");
+            showToast('❌ 편지 발송 실패 (id null 반환)', '#dc2626');
           }
         })
         .catch((err: any) => {
-          showToast(`❌ 오류: ${err?.message ?? String(err)}`, "#dc2626");
+          showToast(`❌ 오류: ${err?.message ?? String(err)}`, '#dc2626');
         });
     };
     return () => {
@@ -260,7 +260,7 @@ export function useAdminCheats({
   useEffect(() => {
     const handle = (e: KeyboardEvent) => {
       if (!e.ctrlKey || !e.shiftKey) return;
-      if (e.key !== "-" && e.key !== "_" && e.code !== "Minus") return;
+      if (e.key !== '-' && e.key !== '_' && e.code !== 'Minus') return;
       if (!isAdmin(myName)) return;
       const cur = gsRef.current;
       if (!cur || cur.winner) return;
@@ -272,12 +272,12 @@ export function useAdminCheats({
         g._seq = (g._seq || 0) + 1;
         applyWinner(g, myPlayerName);
         if (roomCodeRef.current)
-          db.update("rooms/" + roomCodeRef.current, { gs: g }).catch(() => {});
+          db.update('rooms/' + roomCodeRef.current, { gs: g }).catch(() => {});
         return g;
       });
-      showToast("✅ ADMIN CHEAT — 즉시 승리", "#14532d");
+      showToast('✅ ADMIN CHEAT — 즉시 승리', '#14532d');
     };
-    window.addEventListener("keydown", handle);
-    return () => window.removeEventListener("keydown", handle);
+    window.addEventListener('keydown', handle);
+    return () => window.removeEventListener('keydown', handle);
   }, [myName]);
 }
